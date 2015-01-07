@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # add this to the crontbab:
-# */5 * * * * /opt/bro/intel/intel_refresh.sh > /var/log/intel.log
+# */5 * * * * [script_location]/intel_refresh.sh > /var/log/intel.log
 
-cd /opt/bro/intel/
+cd [script_location]
 rm CRITs.intel*
-wget -q http://192.168.11.38/CRITs.intel
+wget -q http://[repository_web_server]/CRITs.intel

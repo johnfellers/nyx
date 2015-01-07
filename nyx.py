@@ -172,18 +172,21 @@ def read_configs(config_file):
 if __name__ == "__main__":
     
     # reading the settings - upon successful read, the functionality will be dependent on the sections in the configuration file
-    settings=read_configs('./nyx.conf')
+    settings=read_configs('/etc/nyx.conf')
     
     pp = pprint.PrettyPrinter(indent=4)
     
+    #creating observable index
+    obs_index={'A':{'medium':[],'high':[]},'Address - ipv4-addr':{'medium':[],'high':[]},'md5':{'medium':[],'high':[]},'email':{'medium':[],'high':[]},'userid':{'medium':[],'high':[]}}
 
-    pp.pprint(settings)
     syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of IP adresses')
-    for ip in list_ips(settings['crits'],100): #json.load(open('ips.json','rb')):
+    for ip in list_ips(settings['crits']): #json.load(open('ips.json','rb')):
         try:
             if 'bro' in settings.keys():
                 alert_bro(ip,settings['bro'])
             confidence=get_intel_confidence(ip)
+            if ip['ip']:
+		obs_index['Address - ipv4-addr'][confidence].append(ip['ip'])
             if confidence=="medium":
                 if 'qradar' in settings.keys():
                     qradar(ip, settings['qradar'],'medium_reference_sets')
@@ -197,11 +200,13 @@ if __name__ == "__main__":
             syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the ip indicator: %s' % str(ip))
 
     syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of domains')
-    for domain in list_fqdns(settings['crits'],100):#json.load(open('domains.json','rb')):
+    for domain in list_fqdns(settings['crits']):#json.load(open('domains.json','rb')):
         try:
             if 'bro' in settings.keys():
                 alert_bro(domain,settings['bro'])
             confidence=get_intel_confidence(domain)
+            if domain['domain']:
+		obs_index['A'][confidence].append(domain['domain'])
             if 'web_proxy' in settings.keys() and confidence=='high':
                 # trying to reduce the false positives by only blocking the high confidence Indicators of Compromise 
                 add_to_proxy(domain,settings['web_proxy'])
@@ -218,13 +223,15 @@ if __name__ == "__main__":
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the domain indicator: %s' % str(domain))
           
+    
     syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of samples')
-    # this is currently half-baked
-    for sample in list_samples(settings['crits'],10):
+    for sample in list_samples(settings['crits']):
         try:
             if 'bro' in settings.keys():
                 alert_bro(sample,settings['bro'])
             confidence=get_intel_confidence(sample)
+            if sample['md5']:
+		obs_index['md5'][confidence].append(sample['md5'])
             if confidence=="medium":
                 if 'qradar' in settings.keys():
                     qradar(sample,settings['qradar'],'medium_reference_sets')
@@ -233,17 +240,25 @@ if __name__ == "__main__":
                     qradar(sample,settings['qradar'],'high_reference_sets')
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the sample indicator: %s' % str(sample))
+            raise
                         
     
     syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of targets')
     for target in list_targets(settings['crits']):
         try:
+	    if target['email_address']:
+		obs_index['email']['high'].append(target['email_address'])
+	    if target['organization_id']:
+		obs_index['userid']['high'].append(target['organization_id'])
             if 'qradar' in settings.keys():
                 qradar(target,settings['qradar'],'high_reference_sets')
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the target: %s' % str(target))
-            
     syslog.syslog(syslog.LOG_INFO,'nyx: performing the closing tasks')
+    # cleaning up orphaned qradar entries
+    if 'qradar' in settings.keys():
+        qradar_sets_cleanup(obs_index,settings['qradar'])
+          
     if 'palo_alto' in settings.keys():
         try:
             res=pan_commit(settings['palo_alto'])
@@ -253,4 +268,4 @@ if __name__ == "__main__":
                 syslog.syslog(syslog.LOG_ERR,'nyx->PAN: unsuccessfully committed to PAN')
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx->PAN: error while trying to commit to PAN')
-    syslog.syslog(syslog.LOG_INFO,'nyx: Thank you for using Nyx. We hope this has been a pleasant experience and that you will continue to use us')
+    syslog.syslog(syslog.LOG_INFO,'nyx: Thank you for using Nyx! We hope this has been a pleasant experience and you will think of us next time you need to distribute indicators to your controls')
