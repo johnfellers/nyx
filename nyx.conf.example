@@ -14,8 +14,10 @@ sets_to_validate = {"Intel.High.Domains": "ALNIC", "Intel.Medium.Domains": "ALNI
 [palo_alto]
 api_key = [Palo Alto API key]
 url = [Palo Alto base URL]
-block_list = [Custom URL category created for blocking]
-alert_list = [custom URL category created for alerting]
+url_block_list = [Custom URL category created for blocking]
+url_alert_list = [custom URL category created for alerting]
+ip_block_list = [blocking address object]
+ip_alert_list = [alerting address object]
 
 [bro]
 filename = [file_path]
