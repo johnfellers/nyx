@@ -111,7 +111,6 @@ def read_configs(config_file):
             exit(-1)
         if config.has_option('bro','indicator_map'):
             configs['bro']['indicator_map']=json.loads(config.get('bro','indicator_map'))
-            set_test+=configs['bro']['indicator_map'].keys()
         else:
             syslog.syslog(syslog.LOG_ERR,'nyx: Unable to load the BRO indicator map from the configuation file.')
             exit(-1)
