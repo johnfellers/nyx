@@ -7,12 +7,25 @@ def qradar(indicator,settings, reference_sets):
     """ places the indicator in a reference set"""
     reference_set_map=settings[reference_sets]
     if 'type' in indicator.keys() and indicator['type']=='Address - ipv4-addr':
-        # adding an ip
-        add_to_reference_set(reference_set_map[indicator['type']], indicator['ip'], get_sources(indicator), settings)
-        return True
+        if 'ip' in indicator.keys():	
+            # adding an ip
+            add_to_reference_set(reference_set_map[indicator['type']], indicator['ip'], get_sources(indicator), settings)
+            return True
+        elif 'value' in indicator.keys():
+            # adding an ip indicator
+            add_to_reference_set(reference_set_map[indicator['type']], indicator['value'], get_sources(indicator), settings)
+            return True
     elif 'type' in indicator.keys() and indicator['type']=='A':
         # adding the domain
         add_to_reference_set(reference_set_map[indicator['type']], indicator['domain'], get_sources(indicator), settings)
+        return True
+    elif 'type' in indicator.keys() and indicator['type']=='URI - Domain Name':
+        # adding the domain name indicator
+        add_to_reference_set(reference_set_map[indicator['type'], indicator['value'], get_sources(indicator), settings)
+        return True
+    elif 'type' in indicator.keys() and indicator['type']=='URI - URL':
+        # adding the url indicator
+        add_to_reference_set(reference_set_map[indicator['type'], indicator['value'], get_sources(indicator), settings)
         return True
     elif 'md5' in indicator.keys():
         # adding the md5 hash
