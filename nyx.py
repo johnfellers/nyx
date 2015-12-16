@@ -182,7 +182,27 @@ if __name__ == "__main__":
     #creating observable index
     obs_index={'A':{'medium':[],'high':[]},'Address - ipv4-addr':{'medium':[],'high':[]},'md5':{'medium':[],'high':[]},'email':{'medium':[],'high':[]},'userid':{'medium':[],'high':[]}}
 
-    syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of IP adresses')
+    syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of Indicators')
+    for ind in list_indicators(settings['crits']): #json.load(open('ips.json','rb')):
+        try:
+            if 'bro' in settings.keys():
+                alert_bro(ip,settings['bro'])
+	    confidence=ind['confidence']['rating']
+            if ind['value']:
+                obs_index['Address - ipv4-addr'][confidence].append(ind['value'])
+            if confidence=="medium":
+                if 'qradar' in settings.keys():
+                    qradar(ind, settings['qradar'],'medium_reference_sets')
+                    # not adding the medium IPs to palo alto, as we have varying sets of limitations for the addresses and address groups.
+            elif confidence=="high":
+                if 'qradar' in settings.keys():
+                    qradar(ind, settings['qradar'],'high_reference_sets')
+                if 'palo_alto' in settings.keys():
+                    palo_alto(ind,settings['palo_alto'],'ip_block_list')
+        except:
+            syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the indicator: %s' % str(ind))
+
+    syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of IP adresses') 
     for ip in list_ips(settings['crits']): #json.load(open('ips.json','rb')):
         try:
             if 'bro' in settings.keys():

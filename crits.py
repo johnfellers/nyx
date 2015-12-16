@@ -14,7 +14,8 @@ def list_indicators(settings):
             res=r.json()
             for potential_result in res['objects']:
                 # only getting indicators meaning something
-                if potential_result['campaign'] and get_intel_confidence(potential_result) in ['medium','high']:
+		# query indicators based on the indicator confidence and not campaign confidence
+                if potential_result['confidence']['rating'] in ['medium','high']:
                     indicators.append(potential_result) 
             params['offset']+=settings['offset']
             total=res['meta']['total_count']
