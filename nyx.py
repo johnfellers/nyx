@@ -171,7 +171,11 @@ def read_configs(config_file):
 if __name__ == "__main__":
     
     # reading the settings - upon successful read, the functionality will be dependent on the sections in the configuration file
+<<<<<<< HEAD
     settings=read_configs('/etc/nyx.conf')
+=======
+    settings=read_configs('nyx.conf')
+>>>>>>> upstream/master
     
     pp = pprint.PrettyPrinter(indent=4)
     
@@ -222,9 +226,15 @@ if __name__ == "__main__":
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the domain indicator: %s' % str(domain))
           
+<<<<<<< HEAD
     
     syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of samples')
     for sample in list_samples(settings['crits']):
+=======
+        
+    syslog.syslog(syslog.LOG_INFO,'nyx: Distributing a list of samples')
+    for sample in list_samples(settings['crits'],10):
+>>>>>>> upstream/master
         try:
             if 'bro' in settings.keys():
                 alert_bro(sample,settings['bro'])
@@ -253,6 +263,10 @@ if __name__ == "__main__":
                 qradar(target,settings['qradar'],'high_reference_sets')
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx: encountered problems adding the target: %s' % str(target))
+<<<<<<< HEAD
+=======
+          
+>>>>>>> upstream/master
     syslog.syslog(syslog.LOG_INFO,'nyx: performing the closing tasks')
     # cleaning up orphaned qradar entries
     if 'qradar' in settings.keys():
@@ -267,4 +281,8 @@ if __name__ == "__main__":
                 syslog.syslog(syslog.LOG_ERR,'nyx->PAN: unsuccessfully committed to PAN')
         except:
             syslog.syslog(syslog.LOG_ERR,'nyx->PAN: error while trying to commit to PAN')
+<<<<<<< HEAD
+=======
+  
+>>>>>>> upstream/master
     syslog.syslog(syslog.LOG_INFO,'nyx: Thank you for using Nyx! We hope this has been a pleasant experience and you will think of us next time you need to distribute indicators to your controls')
